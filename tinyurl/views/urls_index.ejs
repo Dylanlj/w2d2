@@ -4,12 +4,27 @@
   <title>TinyApp</title>
 </head>
 <body>
-  <ul>  
-    <li></li>
-    <li></li>
-    <li></li>
-    <li></li>
-  </u>
+  <header>
+    <% include ./partials/_header %>
+  </header>
+  <table style = "width:100">
+    <tr>
+      <th>Full URL</th>
+      <th>Short URL</th>
+    </tr>
+    <tr>
+      <td><%= urls.b2xVn2 %></td>
+      <td>b2xVn2</td>
+    </tr>
+    <tr>
+      <td><%= urls.b9sm5xK %></td>
+      <td>b9sm5xK</td>      
+    </tr>
+  </table>
+
   <a href= >Currently a dead link to shorten urls</a>
+  <footer>
+    <% include ./partials/_footer %>
+  </footer>
 </body>
 </html>
