@@ -20,7 +20,7 @@ app.get("/urls/new", (req,res) => {
   res.render("urls_new");
 });
 
-//i beleive this receives the req and res from urls_new.ejs
+//i believe this receives the req and res from urls_new.ejs
 app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
@@ -33,11 +33,13 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars)
 })
 
+//provides page with long and short URLS
 app.get("/urls/:id", (req, res) => {
   let templateVars = {shortURL: req.params.id, longURL: urlDatabase[req.params.id]};
   res.render("urls_show", templateVars);
 });
- 
+
+//tells you if the server is running and listening for client requests
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
@@ -52,3 +54,8 @@ function generateRandomString(){
   }
   return randomString;
 }
+
+//redirects the client using the shortURLs longURL site
+app.get("/u/:shortURL", (req, res) => {
+  res.redirect(urlDatabase[req.params.shortURL]);
+});
