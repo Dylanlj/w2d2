@@ -25,7 +25,7 @@ app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
 //this effectively sends the client to urls_show.ejs
-  res.redirect(`http://localhost:8080/urls/${shortURL}`);
+  res.redirect(302, `http://localhost:8080/urls/${shortURL}`);
 })
 
 app.get("/urls", (req, res) => {
@@ -57,5 +57,8 @@ function generateRandomString(){
 
 //redirects the client using the shortURLs longURL site
 app.get("/u/:shortURL", (req, res) => {
-  res.redirect(urlDatabase[req.params.shortURL]);
+  if(!urlDatabase[req.params.shortURL]){
+    throw 'incorrect short URL, try a real one pinocchio'
+  }
+  res.redirect(302, urlDatabase[req.params.shortURL]);
 });
