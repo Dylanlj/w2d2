@@ -22,8 +22,10 @@ app.get("/urls/new", (req,res) => {
 
 //i beleive this receives the req and res from urls_new.ejs
 app.post("/urls", (req, res) => {
-  console.log(req.body);
-  res.send("Ok");
+  let shortURL = generateRandomString();
+  urlDatabase[shortURL] = req.body.longURL;
+//this effectively sends the client to urls_show.ejs
+  res.redirect(`http://localhost:8080/urls/${shortURL}`);
 })
 
 app.get("/urls", (req, res) => {
@@ -32,7 +34,7 @@ app.get("/urls", (req, res) => {
 })
 
 app.get("/urls/:id", (req, res) => {
-  let templateVars = {shortURL: req.params.id};
+  let templateVars = {shortURL: req.params.id, longURL: urlDatabase[req.params.id]};
   res.render("urls_show", templateVars);
 });
  
@@ -50,5 +52,3 @@ function generateRandomString(){
   }
   return randomString;
 }
-
-console.log(generateRandomString())
