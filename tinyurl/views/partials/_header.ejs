@@ -1,3 +1,20 @@
+<html>
+  <body>
+    <% if(!username){ %>
+      <form action="/login" method="POST" style="margin:150px;">
+        <label for="username">Name:</label>
+        <input id="username" type="text" name="username"  style="width: 300px">
+        <input type="submit" value="Submit">
+      </form>
+    <% } else { %>
+      <p>signed in as <%= username%></p>
+      <form action="/logout" method="POST" style="margin:150px;">
+        <input type="submit" value="Logout">
+      </form>    
+    <% } %>
 
-  <h4> I'm a header </h4>
+
+    
+  </body>
+
 
