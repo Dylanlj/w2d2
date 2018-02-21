@@ -1,10 +1,12 @@
 const bodyParser = require('body-parser');
 let express = require("express");
-let app = express();
 let PORT = process.env.PORT || 8080;
+let cookieParser = require('cookie-parser')
+let app = express();
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser())
 
 let urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -36,22 +38,16 @@ app.post("/urls/:id/delete", (req, res) => {
 
 //updates a long URL
 app.post("/urls/:id", (req, res) => {
-
-
   urlDatabase[req.params.id] = req.body.longURL;
-  console.log(urlDatabase)
+  let templateVars = {shortURL: req.params.id, longURL: urlDatabase[req.params.id]};
+  res.render("urls_show", templateVars);
 })
 
 
 app.get("/urls", (req, res) => {
- let templateVars = {urls: {}};
- //adds the long name to the short name as a string
-    for (let shortURL in urlDatabase){
-      templateVars.urls[shortURL] = urlDatabase[shortURL] + ' ====> ' + shortURL;
-    }
+ let templateVars = {urls: urlDatabase}
   res.render("urls_index", templateVars)
 })
-
 
 
 //provides page with long and short URLS
