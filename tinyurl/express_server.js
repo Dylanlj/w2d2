@@ -20,7 +20,7 @@ app.get("/urls/new", (req,res) => {
   res.render("urls_new");
 });
 
-//i believe this receives the req and res from urls_new.ejs
+//i believe this receives the req and res from urls_new.ejs as post request
 app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
@@ -28,12 +28,31 @@ app.post("/urls", (req, res) => {
   res.redirect(302, `http://localhost:8080/urls/${shortURL}`);
 })
 
+//removing a resource
+app.post("/urls/:id/delete", (req, res) => {
+  delete urlDatabase[req.params.id]
+  res.redirect('http://localhost:8080/urls')
+})
+
+//updates a long URL
+app.post("/urls/:id", (req, res) => {
+
+
+  urlDatabase[req.params.id] = req.body.longURL;
+  console.log(urlDatabase)
+})
+
 
 app.get("/urls", (req, res) => {
-  let templateVars = {urls: urlDatabase};
-  console.log(templateVars.urls["9sm5xK"])
+ let templateVars = {urls: {}};
+ //adds the long name to the short name as a string
+    for (let shortURL in urlDatabase){
+      templateVars.urls[shortURL] = urlDatabase[shortURL] + ' ====> ' + shortURL;
+    }
   res.render("urls_index", templateVars)
 })
+
+
 
 //provides page with long and short URLS
 app.get("/urls/:id", (req, res) => {
@@ -60,7 +79,16 @@ function generateRandomString(){
 //redirects the client using the shortURLs longURL site
 app.get("/u/:shortURL", (req, res) => {
   if(!urlDatabase[req.params.shortURL]){
-    throw 'incorrect short URL, try a real one pinocchio'
+    res.status(302).send({
+      error: 'incorrect short URL',
+      next: 'redirect'
+    });
   }
   res.redirect(302, urlDatabase[req.params.shortURL]);
 });
+
+
+
+
+
+
