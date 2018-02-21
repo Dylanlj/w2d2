@@ -58,9 +58,9 @@ app.post("/logout", (req, res) => {
 })
 
 app.get("/urls", (req, res) => {
- let templateVars = {urls: urlDatabase,
+ let templateVars = {shortURL: req.params.id,
+                    longURL: urlDatabase[req.params.id],
                     username: req.cookies["username"] }
-  let templateVars = {shortURL: req.params.id, longURL: urlDatabase[req.params.id]};
   res.render("urls_show", templateVars);
 })
 
