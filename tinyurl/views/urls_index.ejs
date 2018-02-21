@@ -11,19 +11,33 @@
     <tr>
       <th>Full URL</th>
       <th>Short URL</th>
+      <th>Delete?</th>
     </tr>
     <tr>
       <td><%= urls.b2xVn2 %></td>
       <td>b2xVn2</td>
+      <td>      <form action="/urls/b2xVn2/delete" method="POST" style="margin:150px;">
+        <input type="submit" value="Delete?">
+      </form></td>
     </tr>
     <tr>
-      <td><%= urls.b9sm5xK %></td>
-      <td>b9sm5xK</td>      
+      <td><%= urls["9sm5xK"]%></td>
+      <td>9sm5xK</td>    
+      <td>      <form action="/urls/9sm5xK/delete" method="POST" style="margin:150px;">
+        <input type="submit" value="Delete?">
+      </form></td>  
     </tr>
   </table>
 
-  <a href= >Currently a dead link to shorten urls</a>
-  <footer>
+
+
+
+    <a href= >Currently a dead link to shorten urls</a>
+
+
+
+
+    <footer>
     <% include ./partials/_footer %>
   </footer>
 </body>

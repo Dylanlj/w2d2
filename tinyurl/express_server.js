@@ -28,8 +28,10 @@ app.post("/urls", (req, res) => {
   res.redirect(302, `http://localhost:8080/urls/${shortURL}`);
 })
 
+
 app.get("/urls", (req, res) => {
   let templateVars = {urls: urlDatabase};
+  console.log(templateVars.urls["9sm5xK"])
   res.render("urls_index", templateVars)
 })
 
