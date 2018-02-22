@@ -14,10 +14,10 @@ let urlDatabase = {
 };
 
 const users = { 
-  "userRandomID": {
-    id: "userRandomID", 
-    email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+  "fhsueo": {
+    id: "fhsueo", 
+    email: "craig@example.com", 
+    password: "dinosaur"
   },
  "user2RandomID": {
     id: "user2RandomID", 
@@ -34,7 +34,7 @@ app.get("/", (req, res) => {
 
 //brings up urls new page
 app.get("/urls/new", (req,res) => {
-  let templateVars = {username: req.cookies["username"]}
+  let templateVars = {user_id: users[req.cookies["user_id"]]}
   res.render("urls_new", templateVars);
 });
 
@@ -45,26 +45,48 @@ app.post("/urls/:id", (req, res) => {
   urlDatabase[req.params.id] = req.body.longURL;
   let templateVars = {shortURL: req.params.id,
                       longURL: urlDatabase[req.params.id],
-                      username: req.cookies["username"]};
+                      user_id: users[req.cookies["user_id"]]};
   res.render("urls_show", templateVars);
 })
 
-//receives login username
+//receives login email and password
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username)
-  res.redirect('http://localhost:8080/urls')
+  for(let userID in users){
+      if (users[userID].email === req.body.email) {
+        if(users[userID].password === req.body.password){
+          res.cookie('user_id', userID)
+          res.redirect('http://localhost:8080/urls')
+        } else {
+//incorrect password add this message          
+          res.status(403).redirect('http://localhost:8080/')
+        }
+
+      }
+  }
+//incorrect email add this message
+  res.status(403).redirect('http://localhost:8080/')
+})
+
+//login page sloppy coding with the current user and login page, fix last
+app.get("/login", (req, res) => {
+  let currentUser = '';
+  if(req.headers.cookie){
+    currentUser = req.headers.cookie.user_id ; 
+  }
+  let templateVars = {user: currentUser};
+  res.render('urls_login', templateVars)
 })
 
 //clears cookie on logout
 app.post("/logout", (req, res) => {
-  res.clearCookie('username')
+  res.clearCookie('user_id')
   res.redirect('http://localhost:8080/urls')
 })
 
 //urls page, index
 app.get("/urls", (req, res) => {
  let templateVars = {urls: urlDatabase,
-                    username: req.cookies["username"] }
+                    user_id: users[req.cookies["user_id"]] }
   res.render("urls_index", templateVars);
 })
 
@@ -78,26 +100,40 @@ app.post("/urls", (req, res) => {
 
 //registers new users
 app.get("/register", (req, res) => {
-  let templateVars = {username: req.cookies["username"]};
+  let templateVars = {user_id: users[req.cookies["user_id"]]};
   res.render('urls_register.ejs', templateVars)
 })
 
 app.post("/register", (req, res) => {
 // you may be able to do this more efficiently with a for loop, come back to it at the end
+  for (let idKey in users){
+    if(users[idKey].email === req.body.email){
+    console.log(users)
+    res.status(400).render('urls_register.ejs')
+    }
+  }
+
+  if(!req.body.email || !req.body.password ){
+  res.status(400).render('urls_register.ejs')
+  } 
+
   let randomString = generateRandomString()
   users[randomString] = {};
   users[randomString].id = randomString;  
   users[randomString].email = req.body.email;
   users[randomString]['password'] = req.body.password;
   res.cookie('user_id', randomString);
+  console.log(users)
   res.redirect("http://localhost:8080/urls");
+  
+
 })
 
 //provides page with long and short URLS
 app.get("/urls/:id", (req, res) => {
   let templateVars = {shortURL: req.params.id,
                       longURL: urlDatabase[req.params.id],
-                      username: req.cookies["username"]};
+                      user_id: users[req.cookies["user_id"]]};
   res.render("urls_show", templateVars);
 });
 
@@ -115,7 +151,7 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-
+//figure it out yourself
 function generateRandomString(){
   let characters = 'abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ'
   let randomString = '';
@@ -130,13 +166,12 @@ function generateRandomString(){
 //redirects the client using the shortURLs longURL site
 app.get("/u/:shortURL", (req, res) => {
   if(!urlDatabase[req.params.shortURL]){
-    res.status(302).send({
-      error: 'incorrect short URL',
-      next: 'redirect'
-    });
+    res.status(302).send('incorrect short URL');
   }
   res.redirect(302, urlDatabase[req.params.shortURL]);
 });
 
 // you're very inconsistent with '' and "", pick one stupid
-
+//gotta bug check all your error messages, should also ask how the best way to handle them is
+//come up with a way to implement error messages later res.status(400).render('urls_register.ejs', {error: 'this is an error' })
+//repetitive for loops, fix later
