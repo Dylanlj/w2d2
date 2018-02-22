@@ -9,8 +9,14 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser())
 
 let urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2" : {
+   longURL: "http://www.lighthouselabs.ca",
+   userID:"fhsueo"
+  },
+  "9sm5xK": {
+    longURL: "http://www.google.com", 
+    userID: "user2RandomID"
+  }
 };
 
 const users = { 
@@ -48,14 +54,17 @@ app.get("/urls/new", (req,res) => {
 
 
 
-//updates a long URL
+//updates a long URL i want to change this so it redirects to the index page instead of refreshing
 app.post("/urls/:id", (req, res) => {
-  urlDatabase[req.params.id] = req.body.longURL;
-  let templateVars = {shortURL: req.params.id,
-                      longURL: urlDatabase[req.params.id],
-                      user_id: users[req.cookies["user_id"]]};
-  res.render("urls_show", templateVars);
+  if(req.cookies["user_id"] === urlDatabase[req.params.id].userID){
+    urlDatabase[req.params.id].longURL = req.body.longURL;
+    let templateVars = {shortURL: req.params.id,
+                        longURL: urlDatabase[req.params.id].longURL,
+                        user_id: users[req.cookies["user_id"]]};
+    res.render("urls_show", templateVars);
+  }
 })
+
 
 //receives login email and password
 app.post("/login", (req, res) => {
@@ -98,10 +107,10 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 })
 
-//i believe this receives the req and res from urls_new.ejs as post request
+//generates a random short url for the given long url and then directs to the short url page
 app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL].longURL = req.body.longURL;
 //this effectively sends the client to urls_show.ejs
   res.redirect(302, `http://localhost:8080/urls/${shortURL}`);
 })
@@ -112,6 +121,7 @@ app.get("/register", (req, res) => {
   res.render("urls_register.ejs", templateVars)
 })
 
+//registering a new user
 app.post("/register", (req, res) => {
 // you may be able to do this more efficiently with a for loop, come back to it at the end
   for (let idKey in users){
@@ -119,8 +129,7 @@ app.post("/register", (req, res) => {
     console.log(users)
     res.status(400).render("urls_register.ejs")
     }
-  }
-
+  };
   if(!req.body.email || !req.body.password ){
   res.status(400).render("urls_register.ejs")
   } 
@@ -134,7 +143,6 @@ app.post("/register", (req, res) => {
   console.log(users)
   res.redirect("http://localhost:8080/urls");
   
-
 })
 
 //provides page with long and short URLS
@@ -142,7 +150,7 @@ app.get("/urls/:id", (req, res) => {
   for(let urls in urlDatabase){
     if(req.params.id === urls){
       let templateVars = {shortURL: req.params.id,
-                      longURL: urlDatabase[req.params.id],
+                      longURL: urlDatabase[req.params.id].longURL,
                       user_id: users[req.cookies["user_id"]]};
       res.render("urls_show", templateVars);  
     }
@@ -150,9 +158,11 @@ app.get("/urls/:id", (req, res) => {
   res.redirect(404,"http://localhost:8080/urls")
 });
 
-//removing a url resource 
+//deleting a url resource 
 app.post("/urls/:id/delete", (req, res) => {
-  delete urlDatabase[req.params.id]
+  if(req.cookies["user_id"] === urlDatabase[req.params.id].userID){
+    delete urlDatabase[req.params.id]
+  }
   res.redirect("http://localhost:8080/urls")
 })
 
