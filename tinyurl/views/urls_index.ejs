@@ -20,7 +20,9 @@
           </th>
              </tr>
       <% } %>
-
+      <% if(!user_id){ %>
+      <%= "You need to register or login before you can view the urls" %>
+      <% } %>
 
     </table>
 

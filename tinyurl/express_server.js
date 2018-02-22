@@ -102,20 +102,25 @@ app.post("/logout", (req, res) => {
 
 //urls page, index
 app.get("/urls", (req, res) => {
- let templateVars = {urls: urlDatabase,
-                    user_id: users[req.cookies["user_id"]] }
+ let templateVars = {urls: urlsForUser(req.cookies["user_id"]),
+                    user_id: users[req.cookies["user_id"]] }              
   res.render("urls_index", templateVars);
 })
 
 //generates a random short url for the given long url and then directs to the short url page
+//should probably come up with an else statement telling them they didnt enter anything
 app.post("/urls", (req, res) => {
-  let shortURL = generateRandomString();
-  urlDatabase[shortURL].longURL = req.body.longURL;
-//this effectively sends the client to urls_show.ejs
-  res.redirect(302, `http://localhost:8080/urls/${shortURL}`);
+  if(req.body.longURL){
+    let shortURL = generateRandomString();
+    urlDatabase[shortURL] = {};
+    urlDatabase[shortURL].longURL = req.body.longURL;
+    urlDatabase[shortURL].userID = req.cookies["user_id"];
+
+    res.redirect(302, `http://localhost:8080/urls/${shortURL}`); 
+  } 
 })
 
-//registers new users 
+//registers new users page
 app.get("/register", (req, res) => {
   let templateVars = {user_id: users[req.cookies["user_id"]]};
   res.render("urls_register.ejs", templateVars)
@@ -126,7 +131,6 @@ app.post("/register", (req, res) => {
 // you may be able to do this more efficiently with a for loop, come back to it at the end
   for (let idKey in users){
     if(users[idKey].email === req.body.email){
-    console.log(users)
     res.status(400).render("urls_register.ejs")
     }
   };
@@ -140,23 +144,40 @@ app.post("/register", (req, res) => {
   users[randomString].email = req.body.email;
   users[randomString]["password"] = req.body.password;
   res.cookie("user_id", randomString);
-  console.log(users)
   res.redirect("http://localhost:8080/urls");
   
 })
 
-//provides page with long and short URLS
+
+
+//short URL webpage for editing and such, provides page with long and short URLS
 app.get("/urls/:id", (req, res) => {
+  let templateVars = {shortURL: req.params.id,
+                      longURL: urlDatabase[req.params.id].longURL,
+                      user_id: users[req.cookies["user_id"]]
+                      };
+//checks for if the url exists
   for(let urls in urlDatabase){
     if(req.params.id === urls){
-      let templateVars = {shortURL: req.params.id,
-                      longURL: urlDatabase[req.params.id].longURL,
-                      user_id: users[req.cookies["user_id"]]};
-      res.render("urls_show", templateVars);  
+
+      if(!req.cookies["user_id"]){
+        //they're not logged in  
+        res.redirect("http://localhost:8080/login")
+      } else if (urlDatabase[urls].userID === req.cookies["user_id"]){
+        //the cookie matches the url owner
+        res.render("urls_show", templateVars);
+      }
+      templateVars.user_id = undefined;
+      res.render("urls_show", templateVars);
     }
-  }
+  } 
+
+//tell the user this is not a valid address
   res.redirect(404,"http://localhost:8080/urls")
 });
+
+
+
 
 //deleting a url resource 
 app.post("/urls/:id/delete", (req, res) => {
@@ -179,12 +200,22 @@ function generateRandomString(){
   let characters = "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   let randomString = "";
   for(var i = 1; i < 7; i++){
-    let randomNum = Math.floor((Math.random()*61))
+    let randomNum = Math.floor((Math.random() * 61))
     randomString += characters[randomNum];
   }
   return randomString;
 }
 
+//returns the urlDatabase with only the urls that belong to the user
+function urlsForUser (userCookieID){
+  let applicableURLS = {};
+  for(let shortURLS in urlDatabase){
+    if(userCookieID === urlDatabase[shortURLS].userID){
+      applicableURLS[shortURLS] = urlDatabase[shortURLS];
+    }
+  }
+  return applicableURLS
+} 
 
 //redirects the client using the shortURLs longURL site
 app.get("/u/:shortURL", (req, res) => {
@@ -194,7 +225,10 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(302, urlDatabase[req.params.shortURL]);
 });
 
+
+
 // you"re very inconsistent with " and "", pick one stupid
 //gotta bug check all your error messages, should also ask how the best way to handle them is
 //come up with a way to implement error messages later res.status(400).render("urls_register.ejs", {error: "this is an error" })
 //repetitive for loops, fix later
+//i feel like i'm generating a lot of http errors unnecessarily but maybe its supposed to be like that, maybe if you dont add the error code?
