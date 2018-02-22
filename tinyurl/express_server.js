@@ -1,20 +1,21 @@
+var cookieSession = require('cookie-session')
 const bodyParser = require("body-parser");
 const express = require("express");
 const PORT = process.env.PORT || 8080;
 const cookieParser = require("cookie-parser")
 const bcrypt = require('bcrypt');
 
+
 const app = express();
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser())
+app.use(cookieSession({
+  name: 'session',
+  keys: ['hello'],
 
-const password = 'hello';
-const hashedPassword = bcrypt.hashSync(password, 10);
-console.log(hashedPassword)
-
-
+}))
 
 let urlDatabase = {
   "b2xVn2" : {
@@ -76,9 +77,13 @@ app.post("/urls/:id", (req, res) => {
 
 //receives login email and password
 app.post("/login", (req, res) => {
+
   for(let userID in users){
+
       if (users[userID].email === req.body.email) {
+
         if(bcrypt.compareSync(req.body.password, users[userID].password)){
+          console.log("this is if the passwords match")
           res.cookie("user_id", userID)
           res.redirect("http://localhost:8080/urls")
         } else {
@@ -88,6 +93,7 @@ app.post("/login", (req, res) => {
       }
   }
 //incorrect email add this message
+console.log("incorrect email or password")
   res.status(403).redirect("http://localhost:8080/")
 })
 
@@ -109,7 +115,7 @@ app.post("/logout", (req, res) => {
 
 //urls page, index
 app.get("/urls", (req, res) => {
-  console.log(users);
+
  let templateVars = {urls: urlsForUser(req.cookies["user_id"]),
                     user_id: users[req.cookies["user_id"]] }              
   res.render("urls_index", templateVars);
@@ -233,7 +239,6 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(302, urlDatabase[req.params.shortURL].longURL);
 });
 
-console.log(users);
 
 //can't seem to make it to the urls page urls_index.ejs with a new user
 // you"re very inconsistent with " and "", pick one stupid
