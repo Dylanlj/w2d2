@@ -1,21 +1,18 @@
-var cookieSession = require('cookie-session')
+const cookieSession = require('cookie-session')
 const bodyParser = require("body-parser");
 const express = require("express");
 const PORT = process.env.PORT || 8080;
-const cookieParser = require("cookie-parser")
 const bcrypt = require('bcrypt');
-
 
 const app = express();
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser())
-app.use(cookieSession({
-  name: 'session',
-  keys: ['hello'],
 
-}))
+app.use(cookieSession({
+  name: "session",
+  keys: ["szvszd"],
+}));
 
 let urlDatabase = {
   "b2xVn2" : {
@@ -39,87 +36,76 @@ const users = {
     email: "user2@example.com", 
     password: "dishwasher-funk"
   }
-}
+};
 
 
 
 app.get("/", (req, res) => {
   res.end("Hello!")
-})
+});
 
 //brings up urls new page i don"t think sending templatevars is doing anything
 app.get("/urls/new", (req,res) => {
-
-  if(req.cookies["user_id"]){
-      let templateVars = {user_id: users[req.cookies["user_id"]]}
+  if(req.session["user_id"]){
+      let templateVars = {user_id: users[req.session.user_id]}
       res.render("urls_new", templateVars);
   } else {
     res.redirect("http://localhost:8080/login")
   }
-  
-
-
 });
-
-
 
 //updates a long URL i want to change this so it redirects to the index page instead of refreshing
 app.post("/urls/:id", (req, res) => {
-  if(req.cookies["user_id"] === urlDatabase[req.params.id].userID){
+  if(req.session.user_id === urlDatabase[req.params.id].userID){
     urlDatabase[req.params.id].longURL = req.body.longURL;
     let templateVars = {shortURL: req.params.id,
                         longURL: urlDatabase[req.params.id].longURL,
-                        user_id: users[req.cookies["user_id"]]};
+                        user_id: users[req.session.user_id]};
     res.render("urls_show", templateVars);
-  }
-})
+  };
+});
 
 
 //receives login email and password
 app.post("/login", (req, res) => {
-
   for(let userID in users){
-
       if (users[userID].email === req.body.email) {
-
         if(bcrypt.compareSync(req.body.password, users[userID].password)){
-          console.log("this is if the passwords match")
-          res.cookie("user_id", userID)
+          req.session.user_id = userID;
           res.redirect("http://localhost:8080/urls")
         } else {
 //incorrect password add this message          
           res.status(403).redirect("http://localhost:8080/")
-        }
-      }
-  }
+        };
+      };
+  };
 //incorrect email add this message
 console.log("incorrect email or password")
   res.status(403).redirect("http://localhost:8080/")
-})
+});
 
 //login page sloppy coding with the current user and login page, fix last
 app.get("/login", (req, res) => {
   let currentUser = "";
-  if(req.headers.cookie){
-    currentUser = req.headers.cookie.user_id ; 
-  }
+  if(req.session){
+    currentUser = req.session.user_id ; 
+  };
   let templateVars = {user: currentUser};
-  res.render("urls_login", templateVars)
-})
+  res.render("urls_login", templateVars);
+});
 
 //clears cookie on logout
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id")
-  res.redirect("http://localhost:8080/urls")
-})
+  req.session = null;
+  res.redirect("http://localhost:8080/urls");
+});
 
 //urls page, index
 app.get("/urls", (req, res) => {
-
- let templateVars = {urls: urlsForUser(req.cookies["user_id"]),
-                    user_id: users[req.cookies["user_id"]] }              
+ let templateVars = {urls: urlsForUser(req.session.user_id),
+                    user_id: users[req.session.user_id] };           
   res.render("urls_index", templateVars);
-})
+});
 
 //generates a random short url for the given long url and then directs to the short url page
 //should probably come up with an else statement telling them they didnt enter anything
@@ -128,17 +114,17 @@ app.post("/urls", (req, res) => {
     let shortURL = generateRandomString();
     urlDatabase[shortURL] = {};
     urlDatabase[shortURL].longURL = req.body.longURL;
-    urlDatabase[shortURL].userID = req.cookies["user_id"];
+    urlDatabase[shortURL].userID = req.session.user_id;
 
     res.redirect(302, `http://localhost:8080/urls/${shortURL}`); 
-  } 
-})
+  } ;
+});
 
 //registers new users page
 app.get("/register", (req, res) => {
-  let templateVars = {user_id: users[req.cookies["user_id"]]};
-  res.render("urls_register.ejs", templateVars)
-})
+  let templateVars = {user_id: users[req.session.user_id]};
+  res.render("urls_register.ejs", templateVars);
+});
 
 //registering a new user
 app.post("/register", (req, res) => {
@@ -146,21 +132,19 @@ app.post("/register", (req, res) => {
   for (let idKey in users){
     if(users[idKey].email === req.body.email){
     res.status(400).render("urls_register.ejs")
-    }
+    };
   };
   if(!req.body.email || !req.body.password ){
   res.status(400).render("urls_register.ejs")
-  } 
-
-  let randomString = generateRandomString()
+  } ;
+  let randomString = generateRandomString();
   users[randomString] = {};
   users[randomString].id = randomString;  
   users[randomString].email = req.body.email;
-  users[randomString]["password"] = bcrypt.hashSync(req.body.password, 10);
-  res.cookie("user_id", randomString);
+  users[randomString].password = bcrypt.hashSync(req.body.password, 10);
+  req.session.user_id = randomString;
   res.redirect("http://localhost:8080/urls");
-  
-})
+});
 
 
 
@@ -168,24 +152,22 @@ app.post("/register", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   let templateVars = {shortURL: req.params.id,
                       longURL: urlDatabase[req.params.id].longURL,
-                      user_id: users[req.cookies["user_id"]]
+                      user_id: users[req.session.user_id]
                       };
 //checks for if the url exists
   for(let urls in urlDatabase){
     if(req.params.id === urls){
-
-      if(!req.cookies["user_id"]){
+      if(!req.session.user_id){
         //they're not logged in  
         res.redirect("http://localhost:8080/login")
-      } else if (urlDatabase[urls].userID === req.cookies["user_id"]){
+      } else if (urlDatabase[urls].userID === req.session.user_id){
         //the cookie matches the url owner
         res.render("urls_show", templateVars);
-      }
+      };
       templateVars.user_id = undefined;
       res.render("urls_show", templateVars);
-    }
-  } 
-
+    };
+  };
 //tell the user this is not a valid address
   res.redirect(404,"http://localhost:8080/urls")
 });
@@ -195,13 +177,11 @@ app.get("/urls/:id", (req, res) => {
 
 //deleting a url resource 
 app.post("/urls/:id/delete", (req, res) => {
-  if(req.cookies["user_id"] === urlDatabase[req.params.id].userID){
+  if(req.session.user_id === urlDatabase[req.params.id].userID){
     delete urlDatabase[req.params.id]
-  }
-  res.redirect("http://localhost:8080/urls")
-})
-
-
+  };
+  res.redirect("http://localhost:8080/urls");
+});
 
 
 //tells you if the server is running and listening for client requests
@@ -216,9 +196,9 @@ function generateRandomString(){
   for(var i = 1; i < 7; i++){
     let randomNum = Math.floor((Math.random() * 61))
     randomString += characters[randomNum];
-  }
+  };
   return randomString;
-}
+};
 
 //returns the urlDatabase with only the urls that belong to the user
 function urlsForUser (userCookieID){
@@ -228,18 +208,18 @@ function urlsForUser (userCookieID){
       applicableURLS[shortURLS] = urlDatabase[shortURLS];
     }
   }
-  return applicableURLS
+  return applicableURLS;
 } 
 
 //redirects the client using the shortURLs longURL site
 app.get("/u/:shortURL", (req, res) => {
   if(!urlDatabase[req.params.shortURL].longURL){
     res.status(302).send("incorrect short URL");
-  }
+  };
   res.redirect(302, urlDatabase[req.params.shortURL].longURL);
 });
 
-
+//the users in here won't login properly becuase you set up their passwords nad the bcrypt 
 //can't seem to make it to the urls page urls_index.ejs with a new user
 // you"re very inconsistent with " and "", pick one stupid
 //gotta bug check all your error messages, should also ask how the best way to handle them is
