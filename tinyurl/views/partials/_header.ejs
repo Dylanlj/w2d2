@@ -1,15 +1,15 @@
-    <% if(!user_id) { %>
-    <p>
-<%= "you are not signed in" %>
+<!DOCTYPE html>
+<html lang="en">
+  <% if(!user_id) { %>
+  <p>
+    <%= "you are not signed in" %>
     <a href= 'http://localhost:8080/register'> Register </a> 
     &nbsp;
     <a href= 'http://localhost:8080/login'> Login </a>
   </p>
-    <% } else { %>
-
-    <form action="/logout" method="POST" style="margin:150px;">
-      <label > You're signed in with the email <%= user_id.email %> </label>     
-      <input type="submit" value="Logout">
-    </form> 
-
-    <% } %>
+  <% } else { %>
+  <form action="/logout" method="POST" style="margin:150px;">
+    <label > You're signed in with the email <%= user_id.email %> </label>     
+    <input type="submit" value="Logout">
+  </form> 
+  <% } %>

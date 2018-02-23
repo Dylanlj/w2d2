@@ -1,40 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <title>TinyApp</title>
-</head>
-<body>
   <head>
-    <% include ./partials/_header %>
+    <title>TinyApp</title>
   </head>
-  <p>
-
-
-    <% if (shortURL === 1){ %> 
-      <p> This is not a valid URL </p> 
-    <% } else if (shortURL === 2){ %>
-      <%= "You do not have permission to see this URL" %>
-    <% } else if (shortURL === 3) { %>
-      <p>you are not logged in</p>
-     <% } else { %>
-      <table>
-              <tr>
-                <th> Short URL:</th>
-                <td><%= shortURL %></td>
-                <td>
-                  <form action="/urls/<%= shortURL %>" method="POST" style="margin:150px;">
-                    <input id="longURL" type="text" name="longURL" placeholder="<%= longURL %>" style="width: 200px">
-                    <input type="submit" value="Update">
-                  </form> 
-                <td>
-
-            </table>
-   <% } %>
-
-  </p>
-
-  <footer>
-    <% include ./partials/_footer %>
-  </footer>
-</body>
+  <body>
+    <% include ./partials/_header %>
+    <p>
+      <% if (error){ %> 
+          <%= error %>
+       <% } else { %>
+        <table>
+          <tr>
+            <th> Short URL:</th>
+            <td><%= shortURL %></td>
+            <td>
+              <form action="/urls/<%= shortURL %>" method="POST" style="margin:150px;">
+                <input id="longURL" type="text" name="longURL" placeholder="<%= longURL %>" style="width: 200px">
+                <input type="submit" value="Update">
+              </form> 
+            <td>
+        </table>
+     <% } %>
+    </p>
+    <footer>
+      <% include ./partials/_footer %>
+    </footer>
+  </body>
 </html>

@@ -1,34 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <title>TinyApp</title>
-</head>
-<body>
-  <header> <% include ./partials/_header %> </header>
-
-    <table>
-      <% for (var key in urls) { %>
-        <tr>
-          <th><strong><%= key %>:</strong> <%= urls[key].longURL %> </th>  
-          <td><a href= "http://localhost:8080/urls/<%=key%>" > edit </a></td>
-          <td> <form action="/urls/<%=key%>/delete" method="POST" style="margin:150px;">
-        <input type="submit" value="Delete">
-        </form>
-          </td>
-          </th>
-             </tr>
-      <% } %>
-      <% if(!user_id){ %>
-      <%= "You need to register or login before you can view the urls" %>
-      <% } else {%>
-
-    </table>
-      <form action="/urls/new" method="get" style="margin:150px;">
-        <input type="submit" value="Create new short link">        
-      </form>  
-      <% } %>
-    <footer>
-    <% include ./partials/_footer %>
-  </footer>
-</body>
+  <head>
+    <title>TinyApp</title>
+  </head>
+  <body>
+    <header> <% include ./partials/_header %> </header>
+      <table>
+        <% for (var key in urls) { %>
+          <tr>
+            <th><strong><%= key %>:</strong> <%= urls[key].longURL %> </th>  
+            <td><a href= "http://localhost:8080/urls/<%=key%>" > edit </a></td>
+            <td> 
+              <form action="/urls/<%=key%>/delete" method="POST" style="margin:150px;">
+                <input type="submit" value="Delete">
+              </form>
+            </td>
+            </th>
+          </tr>
+        <% } %>
+        <% if(!user_id){ %>
+        <%= "You need to register or login before you can view the urls" %>
+        <% } else {%>
+      </table>
+        <form action="/urls/new" method="get" style="margin:150px;">
+          <input type="submit" value="Create new short link">        
+        </form>  
+        <% } %>
+      <footer>
+      <% include ./partials/_footer %>
+    </footer>
+  </body>
 </html>
