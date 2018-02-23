@@ -13,6 +13,7 @@
 - bcrypt
 - body-parser
 - cookie Session
+- method override
 
 ## Getting Started
 

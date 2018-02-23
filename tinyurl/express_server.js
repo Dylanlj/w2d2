@@ -2,13 +2,14 @@ const cookieSession = require('cookie-session');
 const bodyParser = require("body-parser");
 const express = require("express");
 const PORT = process.env.PORT || 8080;
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
+const methodOverride = require("method-override")
 
 const app = express();
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
-
+app.use(methodOverride("_method"))
 app.use(cookieSession({
   name: "session",
   keys: ["szvszd"],
@@ -165,7 +166,7 @@ app.post("/register", (req, res) => {
 })
 
 //updates a long URL i want to change this so it redirects to the index page instead of refreshing
-app.post("/urls/:id", (req, res) => {
+app.put("/urls/:id", (req, res) => {
   if(!req.session.user_id){
     res.status(403).send("You need to login");
   } else if(req.session.user_id === urlDatabase[req.params.id].userID){
@@ -196,7 +197,7 @@ app.post("/login", (req, res) => {
 })
 
 //deleting a url resource 
-app.post("/urls/:id/delete", (req, res) => {
+app.delete("/urls/:id/delete", (req, res) => {
     if(!req.session.user_id){
     res.status(403).send("You need to login");
   } else if(req.session.user_id === urlDatabase[req.params.id].userID){
