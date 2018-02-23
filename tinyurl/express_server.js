@@ -133,20 +133,26 @@ app.get("/register", (req, res) => {
   if(req.session.user_id){
     res.redirect("/urls");
   }
-  let templateVars = {user_id: users[req.session.user_id]};
+  let templateVars = {user_id: users[req.session.user_id],
+                      error: ""};
   res.render("urls_register.ejs", templateVars);
 });
 
 //registering a new user
 app.post("/register", (req, res) => {
 // you may be able to do this more efficiently with a for loop, come back to it at the end
+// user is already registered  
+  let templateVars = {error: ""}
   for (let idKey in users){
     if(users[idKey].email === req.body.email){
-    res.status(400).render("urls_register.ejs")
+      templateVars.error = "This email is already being used"
+    res.status(400).render("urls_register.ejs", templateVars)
     };
   };
+//user didn't put in an email or password
   if(!req.body.email || !req.body.password ){
-  res.status(400).render("urls_register.ejs")
+    templateVars.error = "You forgot an email or password"
+  res.status(400).render("urls_register.ejs", templateVars)
   } ;
   let randomString = generateRandomString();
   users[randomString] = {};
