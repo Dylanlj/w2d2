@@ -18,11 +18,13 @@ app.use(cookieSession({
 let urlDatabase = {
   "b2xVn2" : {
    longURL: "http://www.lighthouselabs.ca",
-   userID:"fhsueo"
+   userID: "fhsueo",
+   timesVisited: 0
   },
   "9sm5xK": {
     longURL: "http://www.google.com", 
-    userID: "user2RandomID"
+    userID: "user2RandomID",
+    timesVisited: 0
   }
 }
 
@@ -77,6 +79,7 @@ app.post("/logout", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   console.log(req.params.shortURL)
   if(urlDatabase[req.params.shortURL]) {
+    urlDatabase[req.params.shortURL].timesVisited += 1;
     res.redirect(urlDatabase[req.params.shortURL].longURL);  
   } else {
     res.status(404).send("incorrect short URL");    
@@ -117,14 +120,15 @@ app.get("/urls/:id", (req, res) => {
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
     user_id: users[req.session.user_id],
-    error: undefined
+    error: undefined,
+    visits: urlDatabase[req.params.id].timesVisited
   }
   if(!req.session.user_id){
-    //they are not logged in
+//they are not logged in
     templateVars.error = "You need to sign in to see urls";
     res.render("urls_show", templateVars);
   } else if (urlDatabase[req.params.id].userID === req.session.user_id){
-    //the url belongs to this owner/cookie/id
+//the url belongs to this owner/cookie/id
     res.render("urls_show", templateVars);
   }
 //the URL is real but you don't have permission
@@ -140,6 +144,7 @@ app.post("/urls", (req, res) => {
   } else if(req.body.longURL){
     let shortURL = generateRandomString();
     urlDatabase[shortURL] = {};
+    urlDatabase[shortURL].timesVisited = 0;
     urlDatabase[shortURL].longURL = req.body.longURL;
     urlDatabase[shortURL].userID = req.session.user_id;
     res.redirect(302, `http://localhost:8080/urls/${shortURL}`); 

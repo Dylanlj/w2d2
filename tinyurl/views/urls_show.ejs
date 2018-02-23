@@ -6,6 +6,7 @@
   <body>
     <% include ./partials/_header %>
     <p>
+
       <% if (error){ %> 
           <%= error %>
        <% } else { %>
@@ -20,7 +21,8 @@
               </form> 
             <td>
         </table>
-     <% } %>
+      <% } %>
+      times this URL has been used: <%= visits %>
     </p>
     <footer>
       <% include ./partials/_footer %>
