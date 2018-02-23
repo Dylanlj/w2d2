@@ -49,8 +49,8 @@ app.get("/", (req, res) => {
 //brings up urls new page 
 app.get("/urls/new", (req,res) => {
   if(req.session["user_id"]){
-      let templateVars = {user_id: users[req.session.user_id]};
-      res.render("urls_new", templateVars);
+    let templateVars = {user_id: users[req.session.user_id]};
+    res.render("urls_new", templateVars);
   } else {
     res.redirect("http://localhost:8080/login");
   }
@@ -85,8 +85,10 @@ app.get("/u/:shortURL", (req, res) => {
 
 //urls page, index
 app.get("/urls", (req, res) => {
- let templateVars = {urls: urlsForUser(req.session.user_id),
-                    user_id: users[req.session.user_id] };       
+  let templateVars = {
+    urls: urlsForUser(req.session.user_id),
+    user_id: users[req.session.user_id]
+  }     
   res.render("urls_index", templateVars);
 })
 
@@ -95,8 +97,10 @@ app.get("/register", (req, res) => {
   if(req.session.user_id){
     res.redirect("/urls");
   }
-  let templateVars = {user_id: users[req.session.user_id],
-                      error: ""};
+  let templateVars = {
+    user_id: users[req.session.user_id],
+    error: ""
+  }
   res.render("urls_register.ejs", templateVars);
 })
 
@@ -114,19 +118,19 @@ app.get("/urls/:id", (req, res) => {
     longURL: urlDatabase[req.params.id].longURL,
     user_id: users[req.session.user_id],
     error: undefined
-  };
-      if(!req.session.user_id){
-        //they are not logged in
-        templateVars.error = "You need to sign in to see urls";
-        res.render("urls_show", templateVars)
-      } else if (urlDatabase[req.params.id].userID === req.session.user_id){
-        //the url belongs to this owner/cookie/id
-        res.render("urls_show", templateVars);
-      }
+  }
+  if(!req.session.user_id){
+    //they are not logged in
+    templateVars.error = "You need to sign in to see urls";
+    res.render("urls_show", templateVars);
+  } else if (urlDatabase[req.params.id].userID === req.session.user_id){
+    //the url belongs to this owner/cookie/id
+    res.render("urls_show", templateVars);
+  }
 //the URL is real but you don't have permission
-      templateVars.error = "You don't have permission to view this url" ;
-      res.status(403).render("urls_show", templateVars);
-    }
+    templateVars.error = "You don't have permission to view this url";
+    res.status(403).render("urls_show", templateVars);
+  }
 })
 
 //generates a random short url for the given long url and then directs to the short url page
@@ -147,14 +151,14 @@ app.post("/register", (req, res) => {
   let templateVars = {error: ""}
   for (let idKey in users){
     if(users[idKey].email === req.body.email){
-      templateVars.error = "This email is already being used"
-    res.status(400).render("urls_register.ejs", templateVars)
+      templateVars.error = "This email is already being used";
+    res.status(400).render("urls_register.ejs", templateVars);
     }
   }
 //user didn't put in an email or password
   if(!req.body.email || !req.body.password ){
-    templateVars.error = "You forgot an email or password"
-  res.status(400).render("urls_register.ejs", templateVars)
+    templateVars.error = "You forgot an email or password";
+    res.status(400).render("urls_register.ejs", templateVars);
   } 
   let randomString = generateRandomString();
   users[randomString] = {};
@@ -172,8 +176,9 @@ app.put("/urls/:id", (req, res) => {
   } else if(req.session.user_id === urlDatabase[req.params.id].userID){
     urlDatabase[req.params.id].longURL = req.body.longURL;
     let templateVars = {shortURL: req.params.id,
-                        longURL: urlDatabase[req.params.id].longURL,
-                        user_id: users[req.session.user_id]};
+      longURL: urlDatabase[req.params.id].longURL,
+      user_id: users[req.session.user_id]
+    }
     res.redirect("http://localhost:8080/urls");
   }
 })
@@ -182,15 +187,15 @@ app.put("/urls/:id", (req, res) => {
 app.post("/login", (req, res) => {
   let templateVars = {error: ""}
   for(let userID in users){
-      if (users[userID].email === req.body.email) {
-        if(bcrypt.compareSync(req.body.password, users[userID].password)){
-          req.session.user_id = userID;
-          res.redirect("http://localhost:8080/urls");
-        } else {
-          templateVars.error = "invalid password";       
-          res.render("urls_login", templateVars);
-        }
+    if (users[userID].email === req.body.email) {
+      if(bcrypt.compareSync(req.body.password, users[userID].password)){
+        req.session.user_id = userID;
+        res.redirect("http://localhost:8080/urls");
+      } else {
+        templateVars.error = "invalid password";       
+        res.render("urls_login", templateVars);
       }
+    }
   }
   templateVars.error = "invalid email";
   res.render("urls_login", templateVars);
@@ -201,7 +206,7 @@ app.delete("/urls/:id/delete", (req, res) => {
     if(!req.session.user_id){
     res.status(403).send("You need to login");
   } else if(req.session.user_id === urlDatabase[req.params.id].userID){
-    delete urlDatabase[req.params.id]
+    delete urlDatabase[req.params.id];
   }
   res.redirect("http://localhost:8080/urls");
 })
@@ -221,7 +226,7 @@ function generateRandomString(){
   let characters = "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   let randomString = "";
   for(var i = 1; i < 7; i++){
-    let randomNum = Math.floor((Math.random() * 61))
+    let randomNum = Math.floor((Math.random() * 61));
     randomString += characters[randomNum];
   }
   return randomString;
