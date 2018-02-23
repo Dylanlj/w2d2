@@ -10,11 +10,11 @@
           <tr>
             <th><strong><%= key %>:</strong> <%= urls[key].longURL %> </th>  
             <td>
-              <form action="/urls/<%=key%>" method="GET" style="margin:150px;">
+              <form action="/urls/<%=key%>" method="GET" style="margin:25px;">
                 <input type="submit" value="Edit"></td>
               </form>
             <td> 
-              <form action="/urls/<%=key%>/delete?_method=DELETE" method="POST" style="margin:150px;">
+              <form action="/urls/<%=key%>/delete?_method=DELETE" method="POST" style="margin:25px;">
                 <input type="submit" value="Delete">
               </form>
             </td>
@@ -25,7 +25,7 @@
         <%= "You need to register or login before you can view the urls" %>
         <% } else {%>
       </table>
-        <form action="/urls/new" method="GET" style="margin:150px;">
+        <form action="/urls/new" method="GET" style="margin:25px;">
           <input type="submit" value="Create new short link">        
         </form>  
         <% } %>
