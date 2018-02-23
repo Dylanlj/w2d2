@@ -9,9 +9,14 @@
   </head>
   <p>
 
-    <% if (!user_id){ %>
-      <%= "You do not have permission to be here" %>
-    <% } else { %>
+
+    <% if (shortURL === 1){ %> 
+      <p> This is not a valid URL </p> 
+    <% } else if (shortURL === 2){ %>
+      <%= "You do not have permission to see this URL" %>
+    <% } else if (shortURL === 3) { %>
+      <p>you are not logged in</p>
+     <% } else { %>
       <table>
               <tr>
                 <th> Short URL:</th>

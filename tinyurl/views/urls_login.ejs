@@ -1,6 +1,7 @@
 <html>
   <body>
-    <% if(user === ''){ %>
+
+      <h3>Login</h3>
       <form action="/login" method="POST" style="margin:150px;">
         <label for="email">Email:</label>
         <input id="email" type="text" name="email"  style="width: 300px">
@@ -9,13 +10,6 @@
         <input id="password" type="text" name="password"  style="width: 300px">
         <input type="submit" value="Submit">        
       </form>  
-    <% } else { %>
-      <p>You're already signed in</p>
-      <form action="/logout" method="POST" style="margin:150px;">
-        <input type="submit" value="Logout">
-      </form>  
-    <% } %>
-
 
     
   </body>

@@ -4,9 +4,7 @@
   <title>TinyApp</title>
 </head>
 <body>
-  <header>
-    <% include ./partials/_header %>
-  </header>
+  <header> <% include ./partials/_header %> </header>
 
     <table>
       <% for (var key in urls) { %>
@@ -22,11 +20,13 @@
       <% } %>
       <% if(!user_id){ %>
       <%= "You need to register or login before you can view the urls" %>
-      <% } %>
+      <% } else {%>
 
     </table>
-
-
+      <form action="/urls/new" method="get" style="margin:150px;">
+        <input type="submit" value="Create new short link">        
+      </form>  
+      <% } %>
     <footer>
     <% include ./partials/_footer %>
   </footer>

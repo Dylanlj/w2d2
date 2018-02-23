@@ -41,7 +41,10 @@ const users = {
 
 
 app.get("/", (req, res) => {
-  res.end("Hello!")
+  if(req.session.user_id){
+    res.redirect("http://localhost:8080/urls")
+  }
+  res.redirect("http://localhost:8080/login")
 });
 
 //brings up urls new page i don"t think sending templatevars is doing anything
@@ -61,7 +64,7 @@ app.post("/urls/:id", (req, res) => {
     let templateVars = {shortURL: req.params.id,
                         longURL: urlDatabase[req.params.id].longURL,
                         user_id: users[req.session.user_id]};
-    res.render("urls_show", templateVars);
+    res.redirect("http://localhost:8080/urls");
   };
 });
 
@@ -80,30 +83,35 @@ app.post("/login", (req, res) => {
       };
   };
 //incorrect email add this message
-console.log("incorrect email or password")
   res.status(403).redirect("http://localhost:8080/")
 });
 
 //login page sloppy coding with the current user and login page, fix last
 app.get("/login", (req, res) => {
-  let currentUser = "";
-  if(req.session){
-    currentUser = req.session.user_id ; 
-  };
+  if(req.session.user_id){
+    res.redirect("http://localhost:8080/urls")
+  }
+
+  let currentUser = req.session.user_id ; 
+
   let templateVars = {user: currentUser};
   res.render("urls_login", templateVars);
 });
+
+
 
 //clears cookie on logout
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect("http://localhost:8080/urls");
+
 });
+
 
 //urls page, index
 app.get("/urls", (req, res) => {
  let templateVars = {urls: urlsForUser(req.session.user_id),
-                    user_id: users[req.session.user_id] };           
+                    user_id: users[req.session.user_id] };       
   res.render("urls_index", templateVars);
 });
 
@@ -115,13 +123,16 @@ app.post("/urls", (req, res) => {
     urlDatabase[shortURL] = {};
     urlDatabase[shortURL].longURL = req.body.longURL;
     urlDatabase[shortURL].userID = req.session.user_id;
-
+    console.log(urlDatabase[shortURL])
     res.redirect(302, `http://localhost:8080/urls/${shortURL}`); 
   } ;
 });
 
 //registers new users page
 app.get("/register", (req, res) => {
+  if(req.session.user_id){
+    res.redirect("/urls");
+  }
   let templateVars = {user_id: users[req.session.user_id]};
   res.render("urls_register.ejs", templateVars);
 });
@@ -150,26 +161,34 @@ app.post("/register", (req, res) => {
 
 //short URL webpage for editing and such, provides page with long and short URLS
 app.get("/urls/:id", (req, res) => {
+
+  if(!urlDatabase[req.params.id]){
+//the URL is not real        
+  let templateVars = {shortURL: 1,
+                      user_id: users[req.session.user_id]}              
+    res.render("urls_show", templateVars)
+  }
+
   let templateVars = {shortURL: req.params.id,
                       longURL: urlDatabase[req.params.id].longURL,
                       user_id: users[req.session.user_id]
                       };
-//checks for if the url exists
-  for(let urls in urlDatabase){
-    if(req.params.id === urls){
+
+
+console.log("this is if the user is signed in: " + req.session.user_id)
+        
       if(!req.session.user_id){
-        //they're not logged in  
-        res.redirect("http://localhost:8080/login")
-      } else if (urlDatabase[urls].userID === req.session.user_id){
-        //the cookie matches the url owner
+        //they are not logged in
+        templateVars.shortURL = 3;
+        res.render("urls_show", templateVars)
+      } else if (urlDatabase[req.params.id].userID === req.session.user_id){
+        //the url belongs to this owner/cookie/id
         res.render("urls_show", templateVars);
       };
-      templateVars.user_id = undefined;
+//the URL is real but you don't have permission
+      templateVars.shortURL = 2;
       res.render("urls_show", templateVars);
-    };
-  };
-//tell the user this is not a valid address
-  res.redirect(404,"http://localhost:8080/urls")
+
 });
 
 
@@ -213,12 +232,15 @@ function urlsForUser (userCookieID){
 
 //redirects the client using the shortURLs longURL site
 app.get("/u/:shortURL", (req, res) => {
-  if(!urlDatabase[req.params.shortURL].longURL){
+  if(urlDatabase[req.params.shortURL]) {
+    res.redirect(302, urlDatabase[req.params.shortURL].longURL);
+  } else {
     res.status(302).send("incorrect short URL");
   };
-  res.redirect(302, urlDatabase[req.params.shortURL].longURL);
 });
 
+// trying to go to urls/:id with an invalid short URL doesn't give the proper error message
+//at /urls if the user is not logged in returns HTML with a relevant error message
 //the users in here won't login properly becuase you set up their passwords nad the bcrypt 
 //can't seem to make it to the urls page urls_index.ejs with a new user
 // you"re very inconsistent with " and "", pick one stupid
