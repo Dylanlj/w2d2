@@ -164,26 +164,14 @@ app.post("/register", (req, res) => {
   if(!req.body.email || !req.body.password ){
     templateVars.error = "You forgot an email or password";
     res.status(400).render("urls_register.ejs", templateVars);
-  } 
-  let randomString = generateRandomString();
-  users[randomString] = {};
-  users[randomString].id = randomString;  
-  users[randomString].email = req.body.email;
-  users[randomString].password = bcrypt.hashSync(req.body.password, 10);
-  req.session.user_id = randomString;
-  res.redirect("http://localhost:8080/urls");
-})
-
-//updates a long URL i want to change this so it redirects to the index page instead of refreshing
-app.put("/urls/:id", (req, res) => {
-  if(!req.session.user_id){
-    res.status(403).send("You need to login");
-  } else if(req.session.user_id === urlDatabase[req.params.id].userID){
-    urlDatabase[req.params.id].longURL = req.body.longURL;
-    let templateVars = {shortURL: req.params.id,
-      longURL: urlDatabase[req.params.id].longURL,
-      user_id: users[req.session.user_id]
-    }
+  } else {
+    console.log("registering a email and password")
+    let randomString = generateRandomString();
+    users[randomString] = {};
+    users[randomString].id = randomString;  
+    users[randomString].email = req.body.email;
+    users[randomString].password = bcrypt.hashSync(req.body.password, 10);
+    req.session.user_id = randomString;
     res.redirect("http://localhost:8080/urls");
   }
 })
@@ -204,6 +192,20 @@ app.post("/login", (req, res) => {
   }
   templateVars.error = "invalid email";
   res.render("urls_login", templateVars);
+})
+
+//updates a long URL i want to change this so it redirects to the index page instead of refreshing
+app.put("/urls/:id", (req, res) => {
+  if(!req.session.user_id){
+    res.status(403).send("You need to login");
+  } else if(req.session.user_id === urlDatabase[req.params.id].userID){
+    urlDatabase[req.params.id].longURL = req.body.longURL;
+    let templateVars = {shortURL: req.params.id,
+      longURL: urlDatabase[req.params.id].longURL,
+      user_id: users[req.session.user_id]
+    }
+    res.redirect("http://localhost:8080/urls");
+  }
 })
 
 //deleting a url resource 
