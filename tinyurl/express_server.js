@@ -110,30 +110,22 @@ app.get("/register", (req, res) => {
 //short URL webpage for editing, provides page with long and short URLS
 app.get("/urls/:id", (req, res) => {
   if(!urlDatabase[req.params.id]){
-    let templateVars = {
-      error: "the url you are trying to access does not exist",
-      user_id: users[req.session.user_id]
-    }
-    res.status(404).render("urls_show", templateVars)
+    res.status(404).send("the url you are trying to access does not exist")
   } else {
-  let templateVars = {
-    shortURL: req.params.id,
-    longURL: urlDatabase[req.params.id].longURL,
-    user_id: users[req.session.user_id],
-    error: undefined,
-    visits: urlDatabase[req.params.id].timesVisited
-  }
-  if(!req.session.user_id){
-//they are not logged in
-    templateVars.error = "You need to sign in to see urls";
+    let templateVars = {
+      shortURL: req.params.id,
+      longURL: urlDatabase[req.params.id].longURL,
+      user_id: users[req.session.user_id],
+      error: undefined,
+      visits: urlDatabase[req.params.id].timesVisited
+    }
+    if(!req.session.user_id){
+  //they are not logged in
+      templateVars.error = "You need to sign in to see urls";
+    } else if (urlDatabase[req.params.id].userID !== req.session.user_id) {
+      res.status(403).send("You don't have permission to view this url");
+    }
     res.render("urls_show", templateVars);
-  } else if (urlDatabase[req.params.id].userID === req.session.user_id){
-//the url belongs to this owner/cookie/id
-    res.render("urls_show", templateVars);
-  }
-//the URL is real but you don't have permission
-    templateVars.error = "You don't have permission to view this url";
-    res.status(403).render("urls_show", templateVars);
   }
 })
 
@@ -165,7 +157,6 @@ app.post("/register", (req, res) => {
     templateVars.error = "You forgot an email or password";
     res.status(400).render("urls_register.ejs", templateVars);
   } else {
-    console.log("registering a email and password")
     let randomString = generateRandomString();
     users[randomString] = {};
     users[randomString].id = randomString;  
@@ -200,7 +191,8 @@ app.put("/urls/:id", (req, res) => {
     res.status(403).send("You need to login");
   } else if(req.session.user_id === urlDatabase[req.params.id].userID){
     urlDatabase[req.params.id].longURL = req.body.longURL;
-    let templateVars = {shortURL: req.params.id,
+    let templateVars = {
+      shortURL: req.params.id,
       longURL: urlDatabase[req.params.id].longURL,
       user_id: users[req.session.user_id]
     }
